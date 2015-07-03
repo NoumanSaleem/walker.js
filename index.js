@@ -43,7 +43,7 @@ function processResponse(obj, err, res, body) {
     .filter(_.negate(_.partial(_.contains, matched)))
     .value();
 
-  matched.concat(matches);
+  matched = matched.concat(matches);
 
   q.push(matches.map(function (to) {
     return {
