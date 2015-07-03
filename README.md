@@ -1,3 +1,7 @@
+# Walker
+
+A simple tool to walk a website and report errors
+
 ## Installing
 
 `$ npm install`

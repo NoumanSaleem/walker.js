@@ -8,6 +8,7 @@ var defaults = {
 
 var _ = require('lodash');
 var async = require('async');
+var chalk = require('chalk');
 var request = require('request');
 var url = require('url');
 var debug = require('debug');
@@ -51,7 +52,7 @@ function processResponse(obj, err, res, body) {
     };
   }), processResponse);
 
-  logger('Walked %s from %s, statusCode: %d, discovered %d new links', obj.to, obj.from, res.statusCode, matches.length);
+  logger('Walked %s from %s, statusCode: %s, discovered %d new links', obj.to, obj.from, chalk[res.statusCode === 200 ? 'green' : 'red'](res.statusCode), matches.length);
 
   if (res.statusCode !== 200) errors.push(_.extend({}, obj, { statusCode: res.statusCode }));
 }
