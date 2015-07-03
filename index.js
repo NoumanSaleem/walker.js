@@ -7,6 +7,7 @@ var defaults = {
 };
 
 var _ = require('lodash');
+var fs = require('fs');
 var async = require('async');
 var chalk = require('chalk');
 var request = require('request');
@@ -24,9 +25,9 @@ var q = async.queue(function (obj, cb) {
   request(url.resolve(config.host, obj.to), _.partial(_.delay, _.partial(cb, obj), config.delay));
 }, config.concurrency);
 
-q.drain = function() {
-  console.log('all items have been processed');
-};
+function writeErrors() {
+  if (config.output) fs.writeFileSync(config.output, JSON.stringify(errors));
+}
 
 function processResponse(obj, err, res, body) {
   var re = /href=[\'"](\/(?!\/)[^\'" >]+)/g;
@@ -57,8 +58,17 @@ function processResponse(obj, err, res, body) {
   if (res.statusCode !== 200) errors.push(_.extend({}, obj, { statusCode: res.statusCode }));
 }
 
-q.push({ to: config.start }, processResponse);
-
 process.on('exit', function () {
-  console.log(errors);
+  console.log('Process exited. Captured %d errors.', errors.length);
+  writeErrors();
 });
+
+process.on('SIGINT', function () {
+  process.exit();
+});
+
+q.drain = function() {
+  console.log('Queue Empty');
+};
+
+q.push({ to: config.start }, processResponse);
