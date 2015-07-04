@@ -17,6 +17,7 @@ var argv = require('yargs').argv;
 var config = _.defaults(argv, defaults);
 var matched = [];
 var errors = [];
+var walkCount = 0;
 
 var log = debug('walker:success');
 var logError = debug('walker:error');
@@ -34,6 +35,8 @@ function processResponse(obj, err, res, body) {
   var logger = res.statusCode === 200 ? log : logError;
   var matches = [];
   var match;
+
+  walkCount++;
 
   while (match = re.exec(body)) {
     matches.push(match[1]);
@@ -59,7 +62,7 @@ function processResponse(obj, err, res, body) {
 }
 
 process.on('exit', function () {
-  console.log('Process exited. Captured %d errors.', errors.length);
+  console.log('Process exited. Walked %d and captured %d errors.', walkCount, errors.length);
   writeErrors();
 });
 
