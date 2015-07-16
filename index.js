@@ -7,17 +7,20 @@ var defaults = {
 };
 
 var _ = require('lodash');
+var argv = require('yargs').argv;
+var config = _.defaults(argv, defaults);
 var fs = require('fs');
 var async = require('async');
 var chalk = require('chalk');
 var request = require('request');
 var url = require('url');
 var debug = require('debug');
-var argv = require('yargs').argv;
-var config = _.defaults(argv, defaults);
+
 var matched = [];
 var errors = [];
 var walkCount = 0;
+
+var excludePatterns = _.isString(config.exclude) ? config.exclude.split(',').map(function (re) { return new RegExp(re); }) : [];
 
 var log = debug('walker:success');
 var logError = debug('walker:error');
@@ -46,6 +49,12 @@ function processResponse(obj, err, res, body) {
     .unique()
     .filter(_.negate(_.partial(_.contains, matched)))
     .value();
+
+  if (excludePatterns.length) {
+    matches = matches.filter(function (path) {
+      return !excludePatterns.some(function (re) { return re.test(path); });
+    });
+  }
 
   matched = matched.concat(matches);
 
